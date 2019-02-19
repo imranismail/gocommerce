@@ -1,5 +1,5 @@
 CREATE TABLE users (
-  id SERIAL,
-  email varchar,
-  hashed_password varchar
+  id SERIAL PRIMARY KEY,
+  email VARCHAR,
+  hashed_password VARCHAR
 );
