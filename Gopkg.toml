@@ -24,11 +24,10 @@
 #   go-tests = true
 #   unused-packages = true
 
-
-[[constraint]]
-  name = "github.com/gorilla/mux"
-  version = "1.7.0"
-
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "github.com/go-chi/chi"
+  version = "4.0.1"
