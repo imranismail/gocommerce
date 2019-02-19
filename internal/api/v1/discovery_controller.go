@@ -15,7 +15,7 @@ type Discovery struct {
 }
 
 type DiscoveryController struct {
-	Repo *repo.Repo
+	repo *repo.Repo
 }
 
 func NewDiscoveryController(r *repo.Repo) *DiscoveryController {
