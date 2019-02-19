@@ -1,8 +1,8 @@
 package main
 
-import "github.com/imranismail/ecommerce/app"
+import "github.com/imranismail/ecommerce/internal/endpoint"
 
 func main() {
-	app := app.New()
-	app.Serve()
+	e := endpoint.New()
+	e.Serve()
 }

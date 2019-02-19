@@ -1,4 +1,4 @@
-package app
+package api
 
 import (
 	"encoding/json"
@@ -6,17 +6,18 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
-	"github.com/imranismail/ecommerce/model"
+	"github.com/imranismail/ecommerce/internal/model"
+	"github.com/imranismail/ecommerce/internal/repo"
 )
 
-func (a *App) UserController(r chi.Router) {
-	r.Get("/", a.userIndex)
-	r.Post("/", a.userCreate)
-	r.Get("/{id}", a.userShow)
+func UserController(r chi.Router) {
+	r.Get("/", userIndex)
+	r.Post("/", userCreate)
+	r.Get("/{id}", userShow)
 }
 
-func (a *App) userIndex(w http.ResponseWriter, r *http.Request) {
-	u, err := a.Repo.Users.All()
+func userIndex(w http.ResponseWriter, r *http.Request) {
+	u, err := repo.Of(r.Context()).Users.All()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -33,7 +34,7 @@ func (a *App) userIndex(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func (a *App) userShow(w http.ResponseWriter, r *http.Request) {
+func userShow(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	if err != nil {
@@ -41,7 +42,12 @@ func (a *App) userShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u := model.User{ID: id, Email: "imran.codely@gmail.com"}
+	u, err := repo.Of(r.Context()).Users.Find(id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	b, err := json.Marshal(u)
 
@@ -53,9 +59,9 @@ func (a *App) userShow(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func (a *App) userCreate(w http.ResponseWriter, r *http.Request) {
+func userCreate(w http.ResponseWriter, r *http.Request) {
 	u := model.User{Email: "imran.codely@gmail.com", Password: "admin123"}
-	err := a.Repo.Users.Insert(&u)
+	err := repo.Of(r.Context()).Users.Insert(&u)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

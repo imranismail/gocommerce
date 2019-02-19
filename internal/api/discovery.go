@@ -1,4 +1,4 @@
-package app
+package api
 
 import (
 	"encoding/json"
@@ -13,11 +13,11 @@ type Discovery struct {
 	Description string `json:"description"`
 }
 
-func (a *App) DiscoveryController(r chi.Router) {
-	r.Get("/", a.discoveryIndex)
+func DiscoveryController(r chi.Router) {
+	r.Get("/", discoveryIndex)
 }
 
-func (a *App) discoveryIndex(w http.ResponseWriter, r *http.Request) {
+func discoveryIndex(w http.ResponseWriter, r *http.Request) {
 	b, err := json.Marshal(Discovery{Version: "1.0.0", Description: "An eCommerce Service"})
 
 	if err != nil {
