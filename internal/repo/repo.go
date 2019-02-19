@@ -1,7 +1,6 @@
 package repo
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -20,12 +19,12 @@ type Config struct {
 var db *sql.DB
 
 type Repo struct {
-	Users  UserRepo
+	Users  *UserRepo
 	db     *sql.DB
-	config Config
+	config *Config
 }
 
-func New(cfg Config) (r Repo) {
+func New(cfg *Config) (r Repo) {
 	if cfg.Host == "" || cfg.Port == "" || cfg.User == "" || cfg.Password == "" || cfg.Database == "" {
 		log.Fatal(errors.Errorf("All fields must be set (%s)", cfg))
 	}
@@ -33,7 +32,8 @@ func New(cfg Config) (r Repo) {
 	r.config = cfg
 	r.Open()
 	r.db = db
-	r.Users = NewUserRepo(db, "users")
+	userRepo := NewUserRepo(db, "users")
+	r.Users = &userRepo
 
 	return r
 }
@@ -61,8 +61,4 @@ func (r *Repo) Close() {
 		err = errors.Wrap(err, "Couldn't close connection to postgres database")
 		log.Fatal(err)
 	}
-}
-
-func Of(ctx context.Context) *Repo {
-	return ctx.Value("repo").(*Repo)
 }

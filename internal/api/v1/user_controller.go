@@ -10,14 +10,22 @@ import (
 	"github.com/imranismail/ecommerce/internal/repo"
 )
 
-func UserController(r chi.Router) {
-	r.Get("/", userIndex)
-	r.Post("/", userCreate)
-	r.Get("/{id}", userShow)
+type UserController struct {
+	repo *repo.Repo
 }
 
-func userIndex(w http.ResponseWriter, r *http.Request) {
-	u, err := repo.Of(r.Context()).Users.All()
+func NewUserController(r *repo.Repo) *UserController {
+	return &UserController{r}
+}
+
+func (c UserController) Routes(r chi.Router) {
+	r.Get("/", c.list)
+	r.Get("/{id}", c.get)
+	r.Post("/", c.create)
+}
+
+func (c UserController) list(w http.ResponseWriter, r *http.Request) {
+	u, err := c.repo.Users.All()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -34,7 +42,7 @@ func userIndex(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func userShow(w http.ResponseWriter, r *http.Request) {
+func (c UserController) get(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	if err != nil {
@@ -42,10 +50,10 @@ func userShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := repo.Of(r.Context()).Users.Find(id)
+	u, err := c.repo.Users.Find(id)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -59,9 +67,9 @@ func userShow(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func userCreate(w http.ResponseWriter, r *http.Request) {
+func (c UserController) create(w http.ResponseWriter, r *http.Request) {
 	u := model.User{Email: "imran.codely@gmail.com", Password: "admin123"}
-	err := repo.Of(r.Context()).Users.Insert(&u)
+	err := c.repo.Users.Insert(&u)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

@@ -17,14 +17,15 @@ func NewUserRepo(db *sql.DB, source string) UserRepo {
 }
 
 func (r *UserRepo) Insert(user *model.User) error {
-	stmt := fmt.Sprintf(`INSERT INTO %s VALUES ($1, $2) RETURNING id`, r.source)
+	stmt := fmt.Sprintf(`INSERT INTO %s (email, hashed_password) VALUES ($1, $2) RETURNING id`, r.source)
 	return r.db.QueryRow(stmt, user.Email, user.Password).Scan(&user.ID)
 }
 
-func (r *UserRepo) Find(id int) (user model.User, err error) {
+func (r *UserRepo) Find(id int) (*model.User, error) {
+	user := model.User{}
 	stmt := fmt.Sprintf(`SELECT * FROM %s WHERE ID = $1`, r.source)
-	err = r.db.QueryRow(stmt, id).Scan(&user.ID, &user.Email, &user.Password)
-	return
+	err := r.db.QueryRow(stmt, id).Scan(&user.ID, &user.Email, &user.Password)
+	return &user, err
 }
 
 func (r *UserRepo) All() ([]*model.User, error) {

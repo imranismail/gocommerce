@@ -7,13 +7,13 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/imranismail/ecommerce/internal/api"
+	v1 "github.com/imranismail/ecommerce/internal/api/v1"
 	"github.com/imranismail/ecommerce/internal/repo"
 )
 
 type Endpoint struct {
-	Router chi.Router
-	Repo   *repo.Repo
+	router chi.Router
+	repo   *repo.Repo
 }
 
 func New() (e Endpoint) {
@@ -23,31 +23,32 @@ func New() (e Endpoint) {
 }
 
 func (e *Endpoint) Serve() {
-	e.Repo.Open()
-	defer e.Repo.Close()
-	log.Fatal(http.ListenAndServe(":8080", e.Router))
+	e.repo.Open()
+	defer e.repo.Close()
+	log.Fatal(http.ListenAndServe(":8080", e.router))
 }
 
 func (e *Endpoint) initRepo() {
-	r := repo.New(repo.Config{
+	r := repo.New(&repo.Config{
 		User:     "postgres",
 		Password: "postgres",
 		Database: "ecommerce",
 		Host:     "localhost",
 		Port:     "5432",
 	})
-	e.Repo = &r
+	e.repo = &r
 }
 
 func (e *Endpoint) initRoutes() {
-	e.Router = chi.NewRouter()
-	e.Router.Use(middleware.RequestID)
-	e.Router.Use(middleware.RealIP)
-	e.Router.Use(middleware.Logger)
-	e.Router.Use(middleware.Recoverer)
-	e.Router.Use(middleware.Timeout(60 * time.Second))
-	e.Router.Use(middleware.SetHeader("content-type", "application/json"))
-	e.Router.Use(middleware.WithValue("repo", e.Repo))
-	e.Router.Route("/", api.DiscoveryController)
-	e.Router.Route("/users", api.UserController)
+	e.router = chi.NewRouter()
+	e.router.Use(middleware.RequestID)
+	e.router.Use(middleware.RealIP)
+	e.router.Use(middleware.Logger)
+	e.router.Use(middleware.Recoverer)
+	e.router.Use(middleware.Timeout(60 * time.Second))
+	e.router.Use(middleware.SetHeader("content-type", "application/json"))
+	e.router.Route("/v1", func(r chi.Router) {
+		r.Route("/", v1.NewDiscoveryController(e.repo).Routes)
+		r.Route("/users", v1.NewUserController(e.repo).Routes)
+	})
 }
