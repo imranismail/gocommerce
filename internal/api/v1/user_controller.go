@@ -10,9 +10,16 @@ import (
 	"github.com/imranismail/ecommerce/internal/repo"
 )
 
-type UserController struct {
-	repo *repo.Repo
-}
+type (
+	UserController struct {
+		repo *repo.Repo
+	}
+
+	UserCreateReqBody struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+)
 
 func NewUserController(r *repo.Repo) *UserController {
 	return &UserController{r}
@@ -70,15 +77,27 @@ func (this UserController) get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this UserController) create(w http.ResponseWriter, r *http.Request) {
-	u := model.User{Email: "imran.codely@gmail.com", Password: "admin123"}
-	err := this.repo.Users.Insert(&u)
+	var body UserCreateReqBody
+	var user model.User
+
+	err := json.NewDecoder(r.Body).Decode(&body)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	b, err := json.Marshal(u)
+	user.HashedPassword = body.Password
+	user.Email = body.Email
+
+	err = this.repo.Users.Insert(&user)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	b, err := json.Marshal(user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
