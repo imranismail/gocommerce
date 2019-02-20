@@ -18,14 +18,16 @@ func NewUserController(r *repo.Repo) *UserController {
 	return &UserController{r}
 }
 
-func (c UserController) Routes(r chi.Router) {
-	r.Get("/", c.list)
-	r.Get("/{id}", c.get)
-	r.Post("/", c.create)
+func (this UserController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	router := chi.NewRouter()
+	router.Get("/", this.list)
+	router.Get("/{id}", this.get)
+	router.Post("/", this.create)
+	router.ServeHTTP(w, r)
 }
 
-func (c UserController) list(w http.ResponseWriter, r *http.Request) {
-	u, err := c.repo.Users.All()
+func (this UserController) list(w http.ResponseWriter, r *http.Request) {
+	u, err := this.repo.Users.All()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -42,7 +44,7 @@ func (c UserController) list(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func (c UserController) get(w http.ResponseWriter, r *http.Request) {
+func (this UserController) get(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	if err != nil {
@@ -50,7 +52,7 @@ func (c UserController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := c.repo.Users.Find(id)
+	u, err := this.repo.Users.Find(id)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -67,9 +69,9 @@ func (c UserController) get(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func (c UserController) create(w http.ResponseWriter, r *http.Request) {
+func (this UserController) create(w http.ResponseWriter, r *http.Request) {
 	u := model.User{Email: "imran.codely@gmail.com", Password: "admin123"}
-	err := c.repo.Users.Insert(&u)
+	err := this.repo.Users.Insert(&u)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

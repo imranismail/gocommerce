@@ -16,46 +16,43 @@ type Config struct {
 	Database string
 }
 
-var db *sql.DB
-
 type Repo struct {
 	Users  *UserRepo
 	db     *sql.DB
 	config *Config
 }
 
-func New(cfg *Config) (r Repo) {
-	if cfg.Host == "" || cfg.Port == "" || cfg.User == "" || cfg.Password == "" || cfg.Database == "" {
-		log.Fatal(errors.Errorf("All fields must be set (%s)", cfg))
+func New(config *Config) *Repo {
+	if config.Host == "" || config.Port == "" || config.User == "" || config.Password == "" || config.Database == "" {
+		log.Fatal(errors.Errorf("All fields must be set (%s)", config))
 	}
 
-	r.config = cfg
-	r.Open()
-	r.db = db
-	userRepo := NewUserRepo(db, "users")
-	r.Users = &userRepo
+	this := Repo{}
+	this.config = config
 
-	return r
+	return &this
 }
 
-func (r *Repo) Open() {
-	var err error
-	dsn := fmt.Sprintf(`host=%s port=%s user=%s password=%s dbname=%s sslmode=disable`, r.config.Host, r.config.Port, r.config.User, r.config.Password, r.config.Database)
-	db, err = sql.Open("postgres", dsn)
+func (this *Repo) Open() {
+	dsn := fmt.Sprintf(`host=%s port=%s user=%s password=%s dbname=%s sslmode=disable`, this.config.Host, this.config.Port, this.config.User, this.config.Password, this.config.Database)
+	db, err := sql.Open("postgres", dsn)
 
 	if err != nil {
-		err = errors.Wrapf(err, "Couldn't open connection to postgres database (%s)", r.config)
+		err = errors.Wrapf(err, "Couldn't open connection to postgres database (%s)", this.config)
 		log.Fatal(err)
 	}
 
 	if err != nil {
-		err = errors.Wrapf(err, "Couldn't ping the postgres database (%s)", r.config)
+		err = errors.Wrapf(err, "Couldn't ping the postgres database (%s)", this.config)
 		log.Fatal(err)
 	}
+
+	this.db = db
+	this.Users = NewUserRepo(db, "users")
 }
 
-func (r *Repo) Close() {
-	err := r.db.Close()
+func (this *Repo) Close() {
+	err := this.db.Close()
 
 	if err != nil {
 		err = errors.Wrap(err, "Couldn't close connection to postgres database")

@@ -16,39 +16,36 @@ type Endpoint struct {
 	repo   *repo.Repo
 }
 
-func New() (e Endpoint) {
-	e.initRepo()
-	e.initRoutes()
-	return
-}
+func New() *Endpoint {
+	this := Endpoint{}
 
-func (e *Endpoint) Serve() {
-	e.repo.Open()
-	defer e.repo.Close()
-	log.Fatal(http.ListenAndServe(":8080", e.router))
-}
-
-func (e *Endpoint) initRepo() {
-	r := repo.New(&repo.Config{
+	// Repo
+	this.repo = repo.New(&repo.Config{
 		User:     "postgres",
 		Password: "postgres",
 		Database: "ecommerce",
 		Host:     "localhost",
 		Port:     "5432",
 	})
-	e.repo = &r
+
+	// Router
+	this.router = chi.NewRouter()
+	this.router.Use(middleware.RequestID)
+	this.router.Use(middleware.RealIP)
+	this.router.Use(middleware.Logger)
+	this.router.Use(middleware.Recoverer)
+	this.router.Use(middleware.Timeout(60 * time.Second))
+	this.router.Use(middleware.SetHeader("content-type", "application/json"))
+	this.router.Route("/v1", func(router chi.Router) {
+		router.Mount("/", v1.NewDiscoveryController(this.repo))
+		router.Mount("/users", v1.NewUserController(this.repo))
+	})
+
+	return &this
 }
 
-func (e *Endpoint) initRoutes() {
-	e.router = chi.NewRouter()
-	e.router.Use(middleware.RequestID)
-	e.router.Use(middleware.RealIP)
-	e.router.Use(middleware.Logger)
-	e.router.Use(middleware.Recoverer)
-	e.router.Use(middleware.Timeout(60 * time.Second))
-	e.router.Use(middleware.SetHeader("content-type", "application/json"))
-	e.router.Route("/v1", func(r chi.Router) {
-		r.Route("/", v1.NewDiscoveryController(e.repo).Routes)
-		r.Route("/users", v1.NewUserController(e.repo).Routes)
-	})
+func (this *Endpoint) Serve() {
+	this.repo.Open()
+	defer this.repo.Close()
+	log.Fatal(http.ListenAndServe(":8080", this.router))
 }
