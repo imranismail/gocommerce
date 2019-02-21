@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	v1 "github.com/imranismail/ecommerce/internal/api/v1"
 	"github.com/imranismail/ecommerce/internal/repo"
 )
 
@@ -30,13 +29,15 @@ func New() *Endpoint {
 
 	// Router
 	this.router = chi.NewRouter()
-	this.router.Use(middleware.RequestID)
-	this.router.Use(middleware.RealIP)
-	this.router.Use(middleware.Logger)
-	this.router.Use(middleware.Recoverer)
-	this.router.Use(middleware.Timeout(60 * time.Second))
-	this.router.Use(middleware.SetHeader("content-type", "application/json"))
-	this.router.Use(middleware.SetHeader("accept", "application/json"))
+	this.router.Use(
+		middleware.RequestID,
+		middleware.RealIP,
+		middleware.Logger,
+		middleware.Recoverer,
+		middleware.Timeout(60*time.Second),
+		middleware.SetHeader("content-type", "application/json"),
+		middleware.SetHeader("accept", "application/json"),
+	)
 
 	return &this
 }
@@ -44,13 +45,6 @@ func New() *Endpoint {
 func (this *Endpoint) Serve() {
 	this.repo.Open()
 	defer this.repo.Close()
-	this.Routes()
+	this.drawRoutes()
 	log.Fatal(http.ListenAndServe(":8080", this.router))
-}
-
-func (this *Endpoint) Routes() {
-	this.router.Route("/v1", func(router chi.Router) {
-		router.Mount("/", v1.DiscoveryController())
-		router.Mount("/users", v1.UserController(this.repo.User))
-	})
 }
