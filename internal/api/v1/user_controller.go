@@ -12,7 +12,7 @@ import (
 
 type (
 	userController struct {
-		repo *repo.Repo
+		repo *repo.UserRepo
 	}
 
 	UserCreateReqBody struct {
@@ -21,7 +21,7 @@ type (
 	}
 )
 
-func UserController(r *repo.Repo) *userController {
+func UserController(r *repo.UserRepo) *userController {
 	return &userController{r}
 }
 
@@ -34,7 +34,7 @@ func (this userController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (this userController) list(w http.ResponseWriter, r *http.Request) {
-	u, err := this.repo.Users.All()
+	u, err := this.repo.All()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -59,7 +59,7 @@ func (this userController) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := this.repo.Users.Find(id)
+	u, err := this.repo.Find(id)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -90,7 +90,7 @@ func (this userController) create(w http.ResponseWriter, r *http.Request) {
 	user.HashedPassword = body.Password
 	user.Email = body.Email
 
-	err = this.repo.Users.Insert(&user)
+	err = this.repo.Insert(&user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

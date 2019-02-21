@@ -17,7 +17,7 @@ type Config struct {
 }
 
 type Repo struct {
-	Users  *UserRepo
+	User   *UserRepo
 	db     *sql.DB
 	config *Config
 }
@@ -42,13 +42,15 @@ func (this *Repo) Open() {
 		log.Fatal(err)
 	}
 
+	err = db.Ping()
+
 	if err != nil {
 		err = errors.Wrapf(err, "Couldn't ping the postgres database (%s)", this.config)
 		log.Fatal(err)
 	}
 
 	this.db = db
-	this.Users = NewUserRepo(db, "users")
+	this.User = NewUserRepo(db, "users")
 }
 
 func (this *Repo) Close() {

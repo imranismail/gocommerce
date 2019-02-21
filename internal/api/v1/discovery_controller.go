@@ -7,16 +7,13 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/imranismail/ecommerce/internal/model"
-	"github.com/imranismail/ecommerce/internal/repo"
 	"github.com/imranismail/ecommerce/pkg/middleware"
 )
 
-type discoveryController struct {
-	repo *repo.Repo
-}
+type discoveryController struct{}
 
-func DiscoveryController(r *repo.Repo) *discoveryController {
-	return &discoveryController{r}
+func DiscoveryController() *discoveryController {
+	return &discoveryController{}
 }
 
 func (this discoveryController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
