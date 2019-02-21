@@ -37,10 +37,6 @@ func New() *Endpoint {
 	this.router.Use(middleware.Timeout(60 * time.Second))
 	this.router.Use(middleware.SetHeader("content-type", "application/json"))
 	this.router.Use(middleware.SetHeader("accept", "application/json"))
-	this.router.Route("/v1", func(router chi.Router) {
-		router.Mount("/", v1.DiscoveryController())
-		router.Mount("/users", v1.UserController(this.repo.User))
-	})
 
 	return &this
 }
@@ -48,5 +44,13 @@ func New() *Endpoint {
 func (this *Endpoint) Serve() {
 	this.repo.Open()
 	defer this.repo.Close()
+	this.Routes()
 	log.Fatal(http.ListenAndServe(":8080", this.router))
+}
+
+func (this *Endpoint) Routes() {
+	this.router.Route("/v1", func(router chi.Router) {
+		router.Mount("/", v1.DiscoveryController())
+		router.Mount("/users", v1.UserController(this.repo.User))
+	})
 }
