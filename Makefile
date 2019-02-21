@@ -1,6 +1,6 @@
 
 serve:
-	@go run cmd/serve/main.go
+	@realize start
 gen.migration:
 	@migrate create -dir migrations -ext sql $(name)
 db.migrate:
