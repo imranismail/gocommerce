@@ -11,22 +11,22 @@ import (
 	"github.com/imranismail/ecommerce/pkg/middleware"
 )
 
-type DiscoveryController struct {
+type discoveryController struct {
 	repo *repo.Repo
 }
 
-func NewDiscoveryController(r *repo.Repo) *DiscoveryController {
-	return &DiscoveryController{r}
+func DiscoveryController(r *repo.Repo) *discoveryController {
+	return &discoveryController{r}
 }
 
-func (this DiscoveryController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (this discoveryController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router := chi.NewRouter()
 	router.Use(middleware.BasicAuth("Basic realm=\"com.imranismail.ecommerce\"", "username", "password"))
 	router.Get("/", this.list)
 	router.ServeHTTP(w, r)
 }
 
-func (this DiscoveryController) list(w http.ResponseWriter, r *http.Request) {
+func (this discoveryController) list(w http.ResponseWriter, r *http.Request) {
 	b, err := json.Marshal(model.Discovery{Version: "1.0.0", Description: "An eCommerce Service"})
 
 	if err != nil {

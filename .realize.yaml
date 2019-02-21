@@ -1,0 +1,18 @@
+settings:
+  legacy:
+    force: false
+    interval: 0s
+schema:
+- name: serve
+  path: cmd/serve
+  commands:
+    run:
+      status: true
+  watcher:
+    extensions:
+    - go
+    paths:
+    - ../../
+    ignored_paths:
+    - ../../.git
+    - ../../vendor

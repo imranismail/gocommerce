@@ -38,8 +38,8 @@ func New() *Endpoint {
 	this.router.Use(middleware.SetHeader("content-type", "application/json"))
 	this.router.Use(middleware.SetHeader("accept", "application/json"))
 	this.router.Route("/v1", func(router chi.Router) {
-		router.Mount("/", v1.NewDiscoveryController(this.repo))
-		router.Mount("/users", v1.NewUserController(this.repo))
+		router.Mount("/", v1.DiscoveryController(this.repo))
+		router.Mount("/users", v1.UserController(this.repo))
 	})
 
 	return &this

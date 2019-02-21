@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	UserController struct {
+	userController struct {
 		repo *repo.Repo
 	}
 
@@ -21,11 +21,11 @@ type (
 	}
 )
 
-func NewUserController(r *repo.Repo) *UserController {
-	return &UserController{r}
+func UserController(r *repo.Repo) *userController {
+	return &userController{r}
 }
 
-func (this UserController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (this userController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router := chi.NewRouter()
 	router.Get("/", this.list)
 	router.Get("/{id}", this.get)
@@ -33,7 +33,7 @@ func (this UserController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router.ServeHTTP(w, r)
 }
 
-func (this UserController) list(w http.ResponseWriter, r *http.Request) {
+func (this userController) list(w http.ResponseWriter, r *http.Request) {
 	u, err := this.repo.Users.All()
 
 	if err != nil {
@@ -51,7 +51,7 @@ func (this UserController) list(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func (this UserController) get(w http.ResponseWriter, r *http.Request) {
+func (this userController) get(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
 	if err != nil {
@@ -76,7 +76,7 @@ func (this UserController) get(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func (this UserController) create(w http.ResponseWriter, r *http.Request) {
+func (this userController) create(w http.ResponseWriter, r *http.Request) {
 	var body UserCreateReqBody
 	var user model.User
 
